@@ -1,4 +1,4 @@
-package practica0;
+package kuhnclient;
 import java.net.*;
 import java.io.*;
 import java.util.Locale;
