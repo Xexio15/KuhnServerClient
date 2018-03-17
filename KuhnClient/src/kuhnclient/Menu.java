@@ -17,7 +17,7 @@ import java.util.Random;
  * @author levanna
  */
 public class Menu {
-    private Protocolo protocolo;
+    private Protocol protocolo;
     
     public Menu(){
         menu();
@@ -37,7 +37,7 @@ public class Menu {
                     System.out.println("Introduce el puerto de conexion");
                     int port = sc.nextInt();
                     try {
-                        protocolo = new Protocolo(address, port);
+                        protocolo = new Protocol(address, port);
                     } catch (IOException ex) {
                         Logger.getLogger(KuhnClient.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -45,10 +45,68 @@ public class Menu {
                     break;
                 case 2:
                     if(protocolo != null){
-                        Random rand = null;
+                        Random rand = new Random();
                         int randomNum = rand.nextInt((9999 - 1000) + 1) + 1000;
                         try {
                             protocolo.start(randomNum);
+                            System.out.println("Aceptas la apuesta inicial?\n   1- Si\n   2- No");
+                            int op = sc.nextInt();
+                            if(op == 1){
+                                protocolo.ante();
+                                do{
+                                    String accion = protocolo.getAccionTurno();
+                                    int turno = protocolo.getTurno();
+                                    if(protocolo.isDealer()){
+                                        
+                                        System.out.println(accion);
+                                        switch(turno){
+                                            case 2:
+                                                if(accion.equals("P")){
+                                                    System.out.println("Accion:\n   1- Pasar\n   2- Apostar");
+                                                    op = sc.nextInt();
+                                                    if(op == 1){
+                                                        protocolo.check();
+                                                    }else{
+                                                        protocolo.bet();
+                                                    }
+                                                }else if(accion.equals("A")){
+                                                    System.out.println("Accion:\n   1- Ir\n   2- Retirarse");
+                                                    op = sc.nextInt();
+                                                    if(op == 1){
+                                                        protocolo.call();
+                                                    }else{
+                                                        protocolo.fold();
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    else{
+                                        switch(turno){
+                                            case 1:
+                                                System.out.println("Accion:\n   1- Pasar\n   2- Apostar");
+                                                op = sc.nextInt();
+                                                if(op == 1){
+                                                    protocolo.check();
+                                                }else{
+                                                    protocolo.bet();
+                                                }
+                                                break;
+                                            case 3:
+                                                System.out.println("Accion:\n   1- Ir\n    2- Retirarse");
+                                                op = sc.nextInt();
+                                                if(op == 1){
+                                                    protocolo.call();
+                                                }else{
+                                                    protocolo.fold();
+                                                }
+                                                break;
+                                        }
+                                    }
+                                }while(protocolo.getTurno() < 4);
+                            }else{
+                                protocolo.quit();
+                            }
                             
                         } catch (IOException ex) {
                             Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);

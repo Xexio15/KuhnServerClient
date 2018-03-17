@@ -56,6 +56,38 @@ public class ComUtils
 
     return str.trim(); 
   }
+  
+  public String read_space() throws IOException
+  {
+    String str;
+    byte bStr[] = new byte[1];
+    char cStr[] = new char[1];
+
+    bStr = read_bytes(1);
+
+    for(int i = 0; i < 1;i++)
+      cStr[i]= (char) bStr[i];
+
+    str = String.valueOf(cStr);
+
+    return str.trim(); 
+  }
+  
+  public String read_command() throws IOException
+  {
+    String str;
+    byte bStr[] = new byte[4];
+    char cStr[] = new char[4];
+
+    bStr = read_bytes(4);
+
+    for(int i = 0; i < 4;i++)
+      cStr[i]= (char) bStr[i];
+
+    str = String.valueOf(cStr);
+
+    return str.trim(); 
+  }
 
   /* Escriure un string */
   public void write_string(String str) throws IOException
@@ -220,5 +252,51 @@ public class ComUtils
         char caracter = readChar();
         return string+"\n"+num+"\n"+stringVariable+"\n"+caracter;
     }
+    
+    /* Escriure un comandament */
+    public void write_command(String str) throws IOException
+    { 
+      int numBytes, lenStr; 
+      byte bStr[] = new byte[4];
+
+      lenStr = str.length();
+
+      if (lenStr > 4)
+        numBytes = 4;
+      else
+        numBytes = lenStr;
+
+      for(int i = 0; i < numBytes; i++)
+        bStr[i] = (byte) str.charAt(i);
+
+      for(int i = numBytes; i < 4; i++)
+        bStr[i] = (byte) ' ';
+
+      dos.write(bStr, 0, 4);
+    }
+
+    /* Escriure un espai */
+    public void write_space() throws IOException
+    { 
+        String str = " ";
+        int numBytes, lenStr; 
+        byte bStr[] = new byte[1];
+
+        lenStr = str.length();
+
+        if (lenStr > 1)
+          numBytes = 1;
+        else
+          numBytes = lenStr;
+
+        for(int i = 0; i < numBytes; i++)
+          bStr[i] = (byte) str.charAt(i);
+
+        for(int i = numBytes; i < 1; i++)
+          bStr[i] = (byte) ' ';
+
+        dos.write(bStr, 0, 1);
+  }
+  
 }
 
