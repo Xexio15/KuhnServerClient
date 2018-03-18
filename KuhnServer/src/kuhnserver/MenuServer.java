@@ -38,30 +38,41 @@ public class MenuServer {
             System.out.println("Esperando conexión...");
             try {
                 socket = server.accept();
+                
                 System.out.println("Connexion aceptada");
                 protocolo = new ProtocolServer(socket);
+                protocolo.resetTurno();
                 protocolo.read();
                 protocolo.stakes(20, 15);
-                
-                protocolo.dealer(0);
+                Random rand = new Random();
+                protocolo.dealer(rand.nextInt(1));
                 protocolo.card();
                 
                 do{
                     String accion = protocolo.getAccionTurno();
                     int turno = protocolo.getTurno();
                     int op;
+                    System.out.println(turno);
                     if(protocolo.isDealer()){
                         
                         System.out.println(accion);
                         switch(turno){
                             case 2:
                                 if(accion.equals("P")){
-                                    System.out.println("Accion:\n   1- Pasar\n    2- Apostar");
+                                    System.out.println("Accion:\n   1- Pasar\n   2- Apostar");
                                     op = sc.nextInt();
                                     if(op == 1){
                                         protocolo.check();
                                     }else{
                                         protocolo.bet();
+                                    }
+                                }else if(accion.equals("A")){
+                                    System.out.println("Accion:\n   1- Ir\n   2- Retirarse");
+                                    op = sc.nextInt();
+                                    if(op == 1){
+                                        protocolo.call();
+                                    }else{
+                                        protocolo.fold();
                                     }
                                 }
                                 break;
@@ -70,7 +81,7 @@ public class MenuServer {
                     else{
                         switch(turno){
                             case 1:
-                                System.out.println("Accion:\n   1- Pasar\n    2- Apostar");
+                                System.out.println("Accion:\n   1- Pasar\n   2- Apostar");
                                 op = sc.nextInt();
                                 if(op == 1){
                                     protocolo.check();
@@ -79,7 +90,7 @@ public class MenuServer {
                                 }
                                 break;
                             case 3:
-                                System.out.println("Accion:\n   1- Ir\n    2- Retirarse");
+                                System.out.println("Accion:\n   1- Ir\n   2- Retirarse");
                                 op = sc.nextInt();
                                 if(op == 1){
                                     protocolo.call();
