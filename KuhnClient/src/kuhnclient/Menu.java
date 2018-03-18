@@ -19,6 +19,9 @@ import java.util.Random;
 public class Menu {
     private Protocol protocolo;
     
+    /**
+     * Constructor
+     */
     public Menu(){
         menu();
     }
@@ -38,12 +41,14 @@ public class Menu {
                     int port = sc.nextInt();
                     try {
                         protocolo = new Protocol(address, port);
+                        
                     } catch (IOException ex) {
                         Logger.getLogger(KuhnClient.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
                     break;
                 case 2:
+                    protocolo.resetTurno();
                     if(protocolo != null){
                         Random rand = new Random();
                         int randomNum = rand.nextInt((9999 - 1000) + 1) + 1000;
@@ -56,6 +61,7 @@ public class Menu {
                                 do{
                                     String accion = protocolo.getAccionTurno();
                                     int turno = protocolo.getTurno();
+                                    System.out.println(turno);
                                     if(protocolo.isDealer()){
                                         
                                         System.out.println(accion);
@@ -93,7 +99,7 @@ public class Menu {
                                                 }
                                                 break;
                                             case 3:
-                                                System.out.println("Accion:\n   1- Ir\n    2- Retirarse");
+                                                System.out.println("Accion:\n   1- Ir\n   2- Retirarse");
                                                 op = sc.nextInt();
                                                 if(op == 1){
                                                     protocolo.call();
@@ -101,6 +107,8 @@ public class Menu {
                                                     protocolo.fold();
                                                 }
                                                 break;
+                                            default:
+                                                protocolo.readJuego();
                                         }
                                     }
                                 }while(protocolo.getTurno() < 4);
@@ -120,10 +128,13 @@ public class Menu {
                     salir = true;
                     break;
             }
-
+        
         }while(!salir);
     }
     
+    /**
+     * Imprime el menu
+     */
     public static void imprimirMenu(){
         System.out.println("Menú");
         System.out.println("=======================");

@@ -3,6 +3,10 @@ import java.net.*;
 import java.io.*;
 import java.util.Locale;
 
+/**
+ *
+ * @author xexio
+ */
 public class ComUtils
 {
   /* Mida d'una cadena de caracters */
@@ -11,18 +15,33 @@ public class ComUtils
   private DataInputStream dis;
   private DataOutputStream dos;
 
-  public ComUtils(Socket socket) throws IOException
+    /**
+     *
+     * @param Socket socket
+     * @throws IOException
+     */
+    public ComUtils(Socket socket) throws IOException
   {
     dis = new DataInputStream(socket.getInputStream());
     dos = new DataOutputStream(socket.getOutputStream());
   }
   
-  public ComUtils(File file) throws IOException{
+    /**
+     *
+     * @param File file
+     * @throws IOException
+     */
+    public ComUtils(File file) throws IOException{
     dis = new DataInputStream(new FileInputStream(file));
     dos = new DataOutputStream(new FileOutputStream(file));
   }
 
-    /* Llegir un enter de 32 bits */
+    /**
+     * Llegir un enter de 32 bits
+     * @return int
+     * @throws IOException
+     */
+
   public int read_int32() throws IOException
   {
     byte bytes[] = new byte[4];
@@ -31,7 +50,13 @@ public class ComUtils
     return bytesToInt32(bytes,"be");
   }
 
-  /* Escriure un enter de 32 bits */
+
+    /**
+     * Escriure un enter de 32 bits
+     * @param int number
+     * @throws IOException
+     */
+
   public void write_int32(int number) throws IOException
   {
     byte bytes[]=new byte[4];
@@ -40,7 +65,13 @@ public class ComUtils
     dos.write(bytes, 0, 4);
   }
 
-  /* Llegir un string de mida STRSIZE */
+
+    /**
+     * Llegir un string de mida STRSIZE
+     * @return String
+     * @throws IOException
+     */
+
   public String read_string() throws IOException
   {
     String str;
@@ -57,7 +88,12 @@ public class ComUtils
     return str.trim(); 
   }
   
-  public String read_space() throws IOException
+    /**
+     * Llegir un espai 
+     * @return " "
+     * @throws IOException
+     */
+    public String read_space() throws IOException
   {
     String str;
     byte bStr[] = new byte[1];
@@ -73,7 +109,12 @@ public class ComUtils
     return str.trim(); 
   }
   
-  public String read_command() throws IOException
+    /**
+     * Llegir un string de mida 4
+     * @return String
+     * @throws IOException
+     */
+    public String read_command() throws IOException
   {
     String str;
     byte bStr[] = new byte[4];
@@ -89,7 +130,12 @@ public class ComUtils
     return str.trim(); 
   }
 
-  /* Escriure un string */
+    /**
+     * Escriure un string
+     * @param String str
+     * @throws IOException
+     */
+
   public void write_string(String str) throws IOException
   { 
     int numBytes, lenStr; 
@@ -163,6 +209,14 @@ public class ComUtils
   }
 	
     /* Llegir un string  mida variable size = nombre de bytes especifica la longitud*/
+
+    /**
+     *
+     * @param size
+     * @return
+     * @throws IOException
+     */
+
     public  String read_string_variable(int size) throws IOException
     {
         byte bHeader[]=new byte[size];
@@ -187,6 +241,14 @@ public class ComUtils
 
     /* Escriure un string mida variable, size = nombre de bytes especifica la longitud  */
     /* String str = string a escriure.*/
+
+    /**
+     *
+     * @param size
+     * @param str
+     * @throws IOException
+     */
+
     public  void write_string_variable(int size,String str) throws IOException
     {
 
@@ -214,6 +276,11 @@ public class ComUtils
         }
     }
         
+    /**
+     *
+     * @param c
+     * @throws IOException
+     */
     public void writeChar(char c) throws IOException{
         int numBytes = 2; 
         //Creen un array de 2 bytes per guardar el caracter
@@ -226,6 +293,11 @@ public class ComUtils
         dos.write(bStr, 0, 1);
     }
         
+    /**
+     *
+     * @return
+     * @throws IOException
+     */
     public char readChar() throws IOException{
         byte bStr[];
         char c;
@@ -238,6 +310,11 @@ public class ComUtils
         
         return c;
     }
+
+    /**
+     *
+     * @throws IOException
+     */
     public void writeTest() throws IOException{
         write_string("Adeu");
         write_int32(4);
@@ -245,6 +322,11 @@ public class ComUtils
         writeChar('a');
     }
     
+    /**
+     *
+     * @return
+     * @throws IOException
+     */
     public String readTest() throws IOException{
         String string = read_string();
         int num = read_int32();
@@ -254,6 +336,13 @@ public class ComUtils
     }
     
     /* Escriure un comandament */
+
+    /**
+     *
+     * @param str
+     * @throws IOException
+     */
+
     public void write_command(String str) throws IOException
     { 
       int numBytes, lenStr; 
@@ -276,6 +365,12 @@ public class ComUtils
     }
 
     /* Escriure un espai */
+
+    /**
+     *
+     * @throws IOException
+     */
+
     public void write_space() throws IOException
     { 
         String str = " ";
