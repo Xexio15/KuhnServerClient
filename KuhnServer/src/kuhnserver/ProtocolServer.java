@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 /**
  *
@@ -33,6 +34,7 @@ public class ProtocolServer {
     private int fichasCliente;
     private int bote = 0;
     private ArrayList tablaJugadores;
+    private int modo = 3;
     public ProtocolServer(Socket socket) throws UnknownHostException, IOException{
         this.socket = socket;
         this.utils = new ComUtils(this.socket);
@@ -99,7 +101,8 @@ public class ProtocolServer {
         
         this.accionTurno = "I";
         this.utils.write_command("CALL");
-        
+        this.bote++;
+        this.fichasServidor--;
         if(this.turno == 2 || this.turno == 3){
             showdown();
         }else{
@@ -169,6 +172,11 @@ public class ProtocolServer {
         System.out.println("Tu carta es: "+ this.cartaServidor);
         if(dealer){
             readJuego();
+        }else if(!dealer && this.modo == 1){
+            accionAleatoria();
+        }
+        else if(!dealer && this.modo == 2){
+            accionOptima();
         }
     }
     
@@ -180,7 +188,7 @@ public class ProtocolServer {
         System.out.println("La carta del cliente es: "+this.cartaCliente);
         
         this.turno = 5;
-        if(this.cartaCliente > this.cartaServidor){
+        if(valorCarta(this.cartaCliente) > valorCarta(this.cartaServidor)){
             System.out.println("Gana el cliente");
             stakes(this.fichasCliente+this.bote, this.fichasServidor);
         }
@@ -215,18 +223,34 @@ public class ProtocolServer {
                 if(cmd.equals("CHCK")){
                     this.accionTurno = "P";
                     System.out.println("El cliente ha pasado");
-                    salir = true;
+                    if(this.modo == 1){
+                        salir = accionAleatoria();
+                    }else if(modo == 2){
+                        salir = accionOptima();
+                    }
+                    else if(modo == 3){
+                        salir = true;
+                    }
                 }
                 else if(cmd.equals("BET_")){
                     this.fichasCliente--;
                     this.bote++;
                     this.accionTurno = "A";
                     System.out.println("El cliente ha apostado");
-                    salir = true;
+                    if(this.modo == 1){
+                        salir = accionAleatoria();
+                    }else if(modo == 2){
+                        salir = accionOptima();
+                    }
+                    else if(modo == 3){
+                        salir = true;
+                    }
                 }
                 else if(cmd.equals("CALL")){
                     this.accionTurno = "C";
                     System.out.println("El cliente ha ido");
+                    this.bote++;
+                    this.fichasCliente--;
                     if(this.turno == 3){
                         showdown();
                     }
@@ -253,11 +277,21 @@ public class ProtocolServer {
                     this.bote++;
                     this.accionTurno = "A";
                     System.out.println("El cliente ha apostado");
-                    salir = true;
+                    if(this.modo == 1){
+                        salir = accionAleatoria();
+                    }
+                    else if(modo == 2){
+                        salir = accionOptima();
+                    }
+                    else if(modo == 3){
+                        salir = true;
+                    }
                 }
                 else if(cmd.equals("CALL")){
                     this.accionTurno = "C";
                     System.out.println("El cliente ha ido");
+                    this.bote++;
+                    this.fichasCliente--;
                     if(this.turno == 2 || this.turno == 3){
                         showdown();
                     }
@@ -292,5 +326,164 @@ public class ProtocolServer {
         this.turno = 1;
         this.bote = 0;
     }
+    
+    public void setModo(int modo){
+        this.modo = modo;
+    }
+    
+    public boolean accionAleatoria() throws IOException{
+        Random rand = new Random();
+        int accion;
+        if(!dealer){    
+            if(this.turno == 1){
+                accion = rand.nextInt(2);
+                if(accion == 0){
+                    this.check();
+                }else{
+                    this.bet();
+                }
+            }
+            if(this.accionTurno.equals("A")){
+                accion = rand.nextInt(2);
+                this.turno++;
+                if(accion == 0){
+                    this.fold();
+                }else{
+                    this.call();
+                }
+                if(this.turno > 4){
+                    return true;
+                }
+                return false;
+            }
+        }
+        
+        else{
+            if(this.accionTurno.equals("P")){
+                accion = rand.nextInt(2);
+                this.turno++;
+                if(accion == 0){
+                    this.check();
+                }else{
+                    this.bet();
+                }
+                if(this.turno > 4){
+                    return true;
+                }
+                return false;
+            }
+            else if(this.accionTurno.equals("A")){
+                accion = rand.nextInt(2);
+                this.turno++;
+                if(accion == 0){
+                    this.fold();
+                }else{
+                    this.call();
+                }
+                if(this.turno > 4){
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+    
+    public boolean accionOptima() throws IOException{
+        Random rand = new Random();
+        int accion;
+        if(dealer){
+            if(this.cartaServidor == 'K'){
+                if(this.accionTurno.equals("P")){
+                    this.bet();
+                }else if(this.accionTurno.equals("A")){
+                    this.call();
+                }
+                
+            }
+            
+            else if(this.cartaServidor == 'J'){
+                if(this.accionTurno.equals("P")){
+                    accion = rand.nextInt(15)+1;
+                    if(accion <= 10){
+                        this.check();
+                    }
+                    else{
+                        this.bet();
+                    }
+                }else if(this.accionTurno.equals("A")){
+                    this.call();
+                }
+            }
+            
+            else if(this.cartaServidor == 'Q'){
+                if(this.accionTurno.equals("P")){
+                    accion = rand.nextInt(15)+1;
+                    if(accion <= 10){
+                        this.check();
+                    }
+                    else{
+                        this.bet();
+                    }
+                }else if(this.accionTurno.equals("A")){
+                    this.fold();
+                }
+            }
+        }
+        
+        else{
+            if(this.cartaServidor == 'K'){
+                this.bet();
+            }
+            
+            else if(this.cartaServidor == 'Q'){
+                if(this.turno == 1){
+                    this.check();
+                }
+                if(this.accionTurno.equals("A")){
+                    accion = rand.nextInt(15)+1;
+                    if(accion <= 10){
+                        this.call();
+                    }
+                    else{
+                        this.fold();
+                    }
+                }
+            }
+            
+            else if(this.cartaServidor == 'J'){
+                if(this.turno == 1){
+                    accion = rand.nextInt(15)+1;
+                    if(accion <= 10){
+                        this.check();
+                    }
+                    else{
+                        this.bet();
+                    }
+                }
+                if(this.accionTurno.equals("A")){
+                    this.fold();
+                }
+            }
+        }
+        if(this.turno > 4){
+            return true;
+        }
+        return false;
+    }
+    
+    public int valorCarta(char carta){
+        if(carta == 'J'){
+            return 1;
+        }
+        else if(carta == 'Q'){
+            return 2;
+        }
+        else{
+            return 3;
+        }
+    }
+    
+    
     
 }

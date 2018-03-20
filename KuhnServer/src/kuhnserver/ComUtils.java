@@ -2,6 +2,8 @@ package kuhnserver;
 import java.net.*;
 import java.io.*;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ComUtils
 {
@@ -297,5 +299,14 @@ public class ComUtils
 
         dos.write(bStr, 0, 1);
   }
+    
+    
+    public void flushSocket(){
+      try {
+          dos.flush();
+      } catch (IOException ex) {
+          Logger.getLogger(ComUtils.class.getName()).log(Level.SEVERE, null, ex);
+      }
+    }
 }
 
