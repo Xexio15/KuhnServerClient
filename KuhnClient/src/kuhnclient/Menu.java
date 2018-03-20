@@ -51,7 +51,7 @@ public class Menu {
                     protocolo.resetTurno();
                     if(protocolo != null){
                         Random rand = new Random();
-                        int randomNum = rand.nextInt((9999 - 1000) + 1) + 1000;
+                        int randomNum = rand.nextInt((9999 - 1000) + 1) + 1000;//Habria que preguntar pro la ID
                         try {
                             protocolo.start(randomNum);
                             System.out.println("Aceptas la apuesta inicial?\n   1- Si\n   2- No");
@@ -61,10 +61,9 @@ public class Menu {
                                 do{
                                     String accion = protocolo.getAccionTurno();
                                     int turno = protocolo.getTurno();
-                                    System.out.println(turno);
+                                    
                                     if(protocolo.isDealer()){
                                         
-                                        System.out.println(accion);
                                         switch(turno){
                                             case 2:
                                                 if(accion.equals("P")){
