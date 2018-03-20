@@ -6,13 +6,10 @@
 package kuhnserver;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 
 /**
  *
@@ -34,8 +31,8 @@ public class ProtocolServer {
     private int id;
     private int fichasServidor;
     private int fichasCliente;
-    private int bote = 2;
-    
+    private int bote = 0;
+    private ArrayList tablaJugadores;
     public ProtocolServer(Socket socket) throws UnknownHostException, IOException{
         this.socket = socket;
         this.utils = new ComUtils(this.socket);
@@ -43,7 +40,7 @@ public class ProtocolServer {
         cartas.add('J');
         cartas.add('Q');
         cartas.add('K');
-        
+        tablaJugadores = new ArrayList(); //Tabla para guardar a los jugadores
         Collections.shuffle(cartas);
         estado = INICIAR;
     }
@@ -52,6 +49,8 @@ public class ProtocolServer {
         this.utils.write_command("STRT");
         this.utils.write_space();
         this.utils.write_int32(id);
+        this.fichasServidor--;
+        this.bote++;
         estado = PETICION;
         read();
     }
@@ -138,6 +137,8 @@ public class ProtocolServer {
 
                 if(estado == INICIAR && cmd.equals("ANOK")){
                     System.out.println("El cliente ha aceptado la apuesta inicial");
+                    this.fichasCliente--;
+                    this.bote++;
                     salir = true;
                 }
             }while(!salir);
@@ -150,6 +151,10 @@ public class ProtocolServer {
         this.utils.write_int32(jugador);
         if(jugador == 0){
             dealer = true;
+            System.out.println("Eres el dealer");
+        }else{
+            dealer = false;
+            System.out.println("El cliente es el dealer");
         }
     }
     
@@ -195,6 +200,7 @@ public class ProtocolServer {
             if(cmd.equals("STRT")){
                 utils.read_space();
                 id = utils.read_int32();
+                System.out.println("El jugador "+id+" ha iniciado la partida");
                 salir = true;
             }
         }while(!salir); 
@@ -284,6 +290,7 @@ public class ProtocolServer {
     }
     public void resetTurno(){
         this.turno = 1;
+        this.bote = 0;
     }
     
 }
