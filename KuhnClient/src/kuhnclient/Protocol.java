@@ -23,6 +23,7 @@ public class Protocol {
     private boolean dealer = false;
     private static final int PETICION = 1;
     private static final int INICIAR = 2;
+    private static final int FIN = 3;
     private int turno = 1;
     private String accionTurno = null;
     private char carta;
@@ -181,7 +182,7 @@ public class Protocol {
             //Leemos el comando del socket
             cmd = this.utils.read_command();
             //Si el comando es STKS
-            if(estado == PETICION && cmd.equals("STKS")){
+            if((estado == FIN || estado == PETICION) && cmd.equals("STKS")){
                 //Quitamos el espacio
                 this.utils.read_space();
                 
@@ -236,7 +237,7 @@ public class Protocol {
         }while(!salir);
         
         //Si somos el dealer, empezamos segundos, entonces esperamos a leer que hara el servidor
-        if(dealer){
+        if(dealer && this.turno < 4){
             readJuego();
         }
     }
@@ -251,10 +252,7 @@ public class Protocol {
         do{
             //Leemos el comando del socket
             String cmd = this.utils.read_command();
-            if(turno > 4){
-                salir = true;
-            }
-            else if(cmd.equals("SHOW")){
+             if(cmd.equals("SHOW")){
                 utils.read_space();
                 char cartaServidor = utils.readChar();
                 
@@ -267,6 +265,7 @@ public class Protocol {
                     System.out.println("Gana el servidor");
                 }
                 this.turno = 5;
+
             }
             
             else if(cmd.equals("STKS")){
@@ -312,7 +311,7 @@ public class Protocol {
                     this.turno = 5;
                 }
             }
-            else{
+            else if (!dealer){
                 if(cmd.equals("CHCK")){
                     this.accionTurno = "P";
                     System.out.println("El servidor ha pasado");
@@ -335,6 +334,10 @@ public class Protocol {
                     }
                 }
             }
+             else if(turno > 4){
+                salir = true;
+            }
+            
             
         }while(!salir);
         this.turno++;
