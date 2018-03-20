@@ -263,7 +263,7 @@ public class ProtocolServer {
                     this.turno = 5;
                     salir = true;
                 }
-            }else{
+            }else if(!dealer){
                 if(cmd.equals("CHCK")){
                     this.accionTurno = "P";
                     System.out.println("El cliente ha pasado");
@@ -304,6 +304,8 @@ public class ProtocolServer {
                     this.turno = 5;
                     salir = true;
                 }
+            }else if(this.turno > 4){
+                salir = true;
             }
             
         }while(!salir);

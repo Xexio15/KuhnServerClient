@@ -43,21 +43,23 @@ public class MenuServer {
         do{
             System.out.println("Esperando conexión...");
             try {
-                if(socket == null && protocolo == null){
-                    socket = server.accept();
-                    System.out.println("Connexion aceptada");
+         
+                socket = server.accept();
+                System.out.println("Connexion aceptada");
+                if(modoJuego != 3){
+                    new ServerThread(socket, modoJuego).start();
+                }
+                    
+              
+                if(modoJuego == 3){
                     protocolo = new ProtocolServer(socket);
                     protocolo.setModo(modoJuego);
-                }
-                protocolo.resetTurno();
-                protocolo.read();
-                protocolo.stakes(20, 15);//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
-                Random rand = new Random();
-                protocolo.dealer(rand.nextInt(2));
-                protocolo.card();
-                
-               
-                if(modoJuego == 3){
+                    protocolo.resetTurno();
+                    protocolo.read();
+                    protocolo.stakes(20, 15);//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
+                    Random rand = new Random();
+                    protocolo.dealer(rand.nextInt(2));
+                    protocolo.card();
                     do{
                         String accion = protocolo.getAccionTurno();
                         int turno = protocolo.getTurno();
