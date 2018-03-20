@@ -123,7 +123,7 @@ public class Menu {
                     }
                     break;
                 case 3:
-                    System.out.println("Opcion3");
+                    
                     salir = true;
                     break;
             }

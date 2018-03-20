@@ -180,7 +180,6 @@ public class Protocol {
         do{
             //Leemos el comando del socket
             cmd = this.utils.read_command();
-            
             //Si el comando es STKS
             if(estado == PETICION && cmd.equals("STKS")){
                 //Quitamos el espacio
@@ -252,14 +251,16 @@ public class Protocol {
         do{
             //Leemos el comando del socket
             String cmd = this.utils.read_command();
-            
-            if(cmd.equals("SHOW")){
+            if(turno > 4){
+                salir = true;
+            }
+            else if(cmd.equals("SHOW")){
                 utils.read_space();
                 char cartaServidor = utils.readChar();
                 
                 System.out.println("El servidor tiene la carta: "+cartaServidor);
                 
-                if(this.carta > cartaServidor){
+                if(valorCarta(this.carta) > valorCarta(cartaServidor)){
                     System.out.println("Gana el cliente");
                 }
                 else{
@@ -368,5 +369,19 @@ public class Protocol {
      */
     public void resetTurno(){
         this.turno = 1;
+    }
+    
+    public int valorCarta(char carta){
+        if(carta == 'J'){
+            return 1;
+        }
+        
+        else if(carta == 'Q'){
+            return 2;
+        }
+        
+        else{
+            return 3;
+        }
     }
 }
