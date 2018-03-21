@@ -177,6 +177,7 @@ public class Protocol {
         String cmd;
         int arg1;
         int arg2;
+        char arg_dealer;
         
         do{
             //Leemos el comando del socket
@@ -208,10 +209,10 @@ public class Protocol {
                 this.utils.read_space();
                 
                 //Leemos el primer argumento
-                arg1 = this.utils.read_int32();
+                arg_dealer = this.utils.readChar();
                 
                 //Si recibimos un 1 somos el dealer
-                if(arg1 == 1){
+                if(arg_dealer == '1'){
                     System.out.println("Eres el dealer");
                     dealer = true;
                 }
