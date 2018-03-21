@@ -20,21 +20,36 @@ import java.util.logging.Logger;
 public class ServerThread extends Thread {
     private int modo;
     private Socket socket;
+    private ProtocolServer protocolo;
+    private int numDealer;
     public ServerThread(Socket socket, int modo){
         this.socket = socket;
         this.modo = modo;
+        Random rand = new Random();
+        this.numDealer = rand.nextInt(2);
+        try {
+            this.protocolo = new ProtocolServer(socket);
+        } catch (IOException ex) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void run(){
         try {
-            ProtocolServer protocolo = new ProtocolServer(socket);
-            protocolo.setModo(modo);
-            protocolo.resetTurno();
-            protocolo.read();
-            protocolo.stakes(20, 15);//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
-            Random rand = new Random();
-            protocolo.dealer(rand.nextInt(2));
-            protocolo.card();
+            do{ 
+                protocolo.setModo(modo);
+                protocolo.resetTurno();
+                protocolo.read();
+                protocolo.stakes(20, 15);//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
+                Random rand = new Random();
+                protocolo.dealer(this.numDealer);
+                protocolo.card();
+                if (this.numDealer==0){
+                    this.numDealer=1;
+                }else{
+                    this.numDealer=0;
+                }
+            }while(protocolo.getTurno() < 4);
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
         }
