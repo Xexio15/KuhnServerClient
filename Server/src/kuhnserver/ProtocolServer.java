@@ -151,7 +151,7 @@ public class ProtocolServer {
     public void dealer(int jugador) throws IOException{
         this.utils.write_command("DEAL");
         this.utils.write_space();
-        this.utils.write_int32(jugador);
+        this.utils.writeChar((char)jugador);
         if(jugador == 0){
             dealer = true;
             System.out.println("Eres el dealer");
