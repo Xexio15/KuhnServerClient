@@ -239,12 +239,13 @@ public class Protocol {
                 carta = this.utils.readChar();
                 System.out.println("Tu carta es: "+carta);
                 salir = true;
+                estado = CON_CARTA;
                 if(!dealer && this.modo == 1){
                     accionAleatoria();
                 }else if(!dealer && this.modo == 2){
                     accionOptima();
                 }
-                estado = CON_CARTA;
+                
             }
         }while(!salir && this.turno < 4);
         
@@ -281,7 +282,6 @@ public class Protocol {
                 else{
                     System.out.println("Gana el servidor");
                 }
-                this.turno = 5;
                 estado = FIN;
 
             }
