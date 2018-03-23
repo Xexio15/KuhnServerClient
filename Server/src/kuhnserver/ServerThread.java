@@ -28,14 +28,15 @@ public class ServerThread extends Thread {
         this.modo = modo;
         Random rand = new Random();
         this.numDealer = rand.nextInt(2);
+        
+    }
+    
+    public void run(){
         try {
             this.protocolo = new ProtocolServer(socket);
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-    
-    public void run(){
         try {
             protocolo.setModo(modo);
             do{
