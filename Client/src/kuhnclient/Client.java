@@ -14,10 +14,20 @@ public class Client {
      * @param args the command line arguments
      */
     public static void main(String[] args){
-        
-        String nomMaquina = args[0];
-        int numPort =Integer.parseInt(args[1]);
-        int modo =Integer.parseInt(args[2]);
+        int modo = 0;
+        String nomMaquina = "localhost";
+        int numPort = 1212;
+        for(int i = 0; i < args.length; i++){
+            if(args[i].equals("-s")){
+                nomMaquina = args[i+1];
+            }
+            else if(args[i].equals("-p")){
+                numPort = Integer.parseInt(args[i+1]);
+            }else if(args[i].equals("-i")){
+                modo = Integer.parseInt(args[i+1]);
+            }
+        }
+
         Menu menu = new Menu(nomMaquina, numPort, modo);
     } // fi del main
  
