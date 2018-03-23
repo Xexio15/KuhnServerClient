@@ -15,8 +15,17 @@ public class Server {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        int numPort =Integer.parseInt(args[0]);
-        int modo = Integer.parseInt(args[1]);
+        int modo = 1;
+        int numPort = 1212;
+      
+        for(int i = 0; i < args.length; i++){
+            if(args[i].equals("-p")){
+                numPort = Integer.parseInt(args[i+1]);
+            }else if(args[i].equals("-i")){
+                modo = Integer.parseInt(args[i+1]);
+            }
+        }
+        
         MenuServer menu = new MenuServer(numPort, modo);
     }
     
