@@ -35,8 +35,8 @@ public class ProtocolServer {
     private char cartaCliente;
     private char cartaMesa;
     private int id;
-    private int fichasServidor;
-    private int fichasCliente;
+    private int fichasServidor = 15;
+    private int fichasCliente = 20;
     private int bote = 0;
     private ArrayList tablaJugadores;
     private int modo = 3;
@@ -135,19 +135,19 @@ public class ProtocolServer {
         this.utils.write_command("FOLD");
         logger.info("FOLD");
         System.out.println("Te has retirado, el cliente gana");
-        stakes(this.fichasCliente+this.bote, this.fichasServidor);
+        this.fichasCliente = this.fichasCliente + this.bote;
+        stakes();
         this.turno = 5;
         
     }
     
-    public void stakes(int fichasCliente, int fichasServidor) throws IOException{
-        this.fichasCliente = fichasCliente;
-        this.fichasServidor = fichasServidor;
+    public void stakes() throws IOException{
+       
         this.utils.write_command("STKS");
         this.utils.write_space();
-        this.utils.write_int32(fichasCliente);
+        this.utils.write_int32(this.fichasCliente);
         this.utils.write_space();
-        this.utils.write_int32(fichasServidor);
+        this.utils.write_int32(this.fichasServidor);
         logger.info("STKS"+' '+fichasCliente+' '+fichasServidor);
         System.out.println("Tienes "+fichasServidor+" fichas");
         
@@ -220,11 +220,13 @@ public class ProtocolServer {
         this.turno = 5;
         if(valorCarta(this.cartaCliente) > valorCarta(this.cartaServidor)){
             System.out.println("Gana el cliente");
-            stakes(this.fichasCliente+this.bote, this.fichasServidor);
+            this.fichasCliente = this.fichasCliente + this.bote;
+            stakes();
         }
         else{
             System.out.println("Gana el servidor");
-            stakes(this.fichasCliente, this.fichasServidor+this.bote);
+            this.fichasServidor = this.fichasServidor + this.bote;
+            stakes();
         }
         
     }
@@ -303,7 +305,8 @@ public class ProtocolServer {
                     this.accionTurno = "F";
                     System.out.println("El cliente se ha retirado, el servidor gana");
                     logger.info(cmd);
-                    stakes(this.fichasCliente, this.fichasServidor+this.bote);
+                    this.fichasServidor = this.fichasServidor + this.bote;
+                    stakes();
                     this.turno = 5;
                     salir = true;
                 }
@@ -348,7 +351,8 @@ public class ProtocolServer {
                     this.accionTurno = "F";
                     logger.info(cmd);
                     System.out.println("El cliente se ha retirado, el servidor gana");
-                    stakes(this.fichasCliente, this.fichasServidor+this.bote);
+                    this.fichasServidor = this.fichasServidor + this.bote;
+                    stakes();
                     this.turno = 5;
                     salir = true;
                 }

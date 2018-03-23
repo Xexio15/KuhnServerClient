@@ -63,7 +63,7 @@ public class MenuServer {
                     protocolo.setModo(modoJuego);
                     protocolo.resetTurno();
                     protocolo.read();
-                    protocolo.stakes(20, 15);//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
+                    protocolo.stakes();//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
                     Random rand = new Random();
                     protocolo.dealer(rand.nextInt(2));
                     protocolo.card();
