@@ -17,7 +17,8 @@ public class Client {
         
         String nomMaquina = args[0];
         int numPort =Integer.parseInt(args[1]);
-        Menu menu = new Menu(nomMaquina, numPort);
+        int modo =Integer.parseInt(args[2]);
+        Menu menu = new Menu(nomMaquina, numPort, modo);
     } // fi del main
  
 } // fi de la classe

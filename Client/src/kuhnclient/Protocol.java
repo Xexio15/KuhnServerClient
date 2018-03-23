@@ -8,7 +8,11 @@ package kuhnclient;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -16,6 +20,7 @@ import java.net.UnknownHostException;
  */
 public class Protocol {
     private InetAddress address;
+    private int modo;
     private int port;
     private Socket socket;
     private ComUtils utils;
@@ -24,6 +29,8 @@ public class Protocol {
     private static final int PETICION = 1;
     private static final int INICIAR = 2;
     private static final int FIN = 3;
+    private static final int CON_CARTA = 4;
+    private static final int STKS_LEIDO = 5;
     private int turno = 1;
     private String accionTurno = null;
     private char carta;
@@ -67,7 +74,6 @@ public class Protocol {
     public void ante() throws IOException{
         //Enviamos el comanod ANTE_OK
         this.utils.write_command("ANOK");
-        
         //Cambiamos el estado
         estado = INICIAR;
         
@@ -182,8 +188,9 @@ public class Protocol {
         do{
             //Leemos el comando del socket
             cmd = this.utils.read_command();
+            System.out.println(cmd);
             //Si el comando es STKS
-            if((estado == FIN || estado == PETICION) && cmd.equals("STKS")){
+            if(estado == PETICION && cmd.equals("STKS")){
                 //Quitamos el espacio
                 this.utils.read_space();
                 
@@ -231,12 +238,19 @@ public class Protocol {
                 //Leemos el argumento i guardamos que carta tenemos
                 carta = this.utils.readChar();
                 System.out.println("Tu carta es: "+carta);
-                
                 salir = true;
+                if(!dealer && this.modo == 1){
+                    accionAleatoria();
+                }else if(!dealer && this.modo == 2){
+                    accionOptima();
+                }
+                estado = CON_CARTA;
             }
+        }while(!salir && this.turno < 4);
         
-        }while(!salir);
-        
+        if(estado == CON_CARTA && (this.modo == 1 || this.modo == 2)){
+            readJuego();
+        }
         //Si somos el dealer, empezamos segundos, entonces esperamos a leer que hara el servidor
         if(dealer && this.turno < 4){
             readJuego();
@@ -253,6 +267,8 @@ public class Protocol {
         do{
             //Leemos el comando del socket
             String cmd = this.utils.read_command();
+            System.out.println(cmd);
+            
              if(cmd.equals("SHOW")){
                 utils.read_space();
                 char cartaServidor = utils.readChar();
@@ -266,6 +282,7 @@ public class Protocol {
                     System.out.println("Gana el servidor");
                 }
                 this.turno = 5;
+                estado = FIN;
 
             }
             
@@ -279,6 +296,7 @@ public class Protocol {
                 this.utils.read_int32();
                 
                 salir = true;
+                estado = STKS_LEIDO;
             }
             
             //Si somos el dealer
@@ -286,7 +304,14 @@ public class Protocol {
                 if(cmd.equals("CHCK")){
                     this.accionTurno = "P";
                     System.out.println("El servidor ha pasado");
-                    
+                    if(this.modo == 1){
+                        salir = accionAleatoria();
+                    }else if(modo == 2){
+                        salir = accionOptima();
+                    }
+                    else if(this.turno != 2 && modo == 0){
+                        salir = true;
+                    }
                     //No salimos porque tendra que leer el showdown/stakes
                     if(this.turno != 2){
                         salir = true;
@@ -295,7 +320,14 @@ public class Protocol {
                 else if(cmd.equals("BET_")){
                     this.accionTurno = "A";
                     System.out.println("El servidor ha apostado");
-                    salir = true;
+                    if(this.modo == 1){
+                        salir = accionAleatoria();
+                    }else if(modo == 2){
+                        salir = accionOptima();
+                    }
+                    else if(modo == 0){
+                        salir = true;
+                    }
                 }
                 else if(cmd.equals("CALL")){
                     this.accionTurno = "C";
@@ -322,7 +354,15 @@ public class Protocol {
                 }else if(cmd.equals("BET_")){
                     this.accionTurno = "A";
                     System.out.println("El servidor ha apostado");
-                    salir = true;
+                    if(this.modo == 1){
+                        salir = accionAleatoria();
+                    }
+                    else if(modo == 2){
+                        salir = accionOptima();
+                    }
+                    else if(modo == 0){
+                        salir = true;
+                    }
                 }else if(cmd.equals("FOLD")){
                     this.accionTurno = "F";
                     System.out.println("El servidor se ha retirado, el cliente gana");
@@ -335,11 +375,13 @@ public class Protocol {
                     }
                 }
             }
-             else if(turno > 4){
+            if(turno > 4){
                 salir = true;
             }
             
-            
+            if(estado == STKS_LEIDO){
+                salir= true;
+            }
         }while(!salir);
         this.turno++;
     }
@@ -373,6 +415,7 @@ public class Protocol {
      */
     public void resetTurno(){
         this.turno = 1;
+       
     }
     
     public int valorCarta(char carta){
@@ -387,5 +430,150 @@ public class Protocol {
         else{
             return 3;
         }
+    }
+    
+    public boolean accionOptima() throws IOException{
+        Random rand = new Random();
+        int accion;
+        if(dealer){
+            if(this.carta == 'K'){
+                if(this.accionTurno.equals("P")){
+                    this.bet();
+                }else if(this.accionTurno.equals("A")){
+                    this.call();
+                }
+                
+            }
+            
+            else if(this.carta == 'J'){
+                if(this.accionTurno.equals("P")){
+                    accion = rand.nextInt(15)+1;
+                    if(accion <= 10){
+                        this.check();
+                    }
+                    else{
+                        this.bet();
+                    }
+                }else if(this.accionTurno.equals("A")){
+                    this.call();
+                }
+            }
+            
+            else if(this.carta == 'Q'){
+                if(this.accionTurno.equals("P")){
+                    accion = rand.nextInt(15)+1;
+                    if(accion <= 10){
+                        this.check();
+                    }
+                    else{
+                        this.bet();
+                    }
+                }else if(this.accionTurno.equals("A")){
+                    this.fold();
+                }
+            }
+        }
+        
+        else{
+            if(this.carta == 'K'){
+                this.bet();
+            }
+            
+            else if(this.carta == 'Q'){
+                if(this.turno == 1){
+                    this.check();
+                }
+                if(this.accionTurno.equals("A")){
+                    accion = rand.nextInt(15)+1;
+                    if(accion <= 10){
+                        this.call();
+                    }
+                    else{
+                        this.fold();
+                    }
+                }
+            }
+            
+            else if(this.carta == 'J'){
+                if(this.turno == 1){
+                    accion = rand.nextInt(15)+1;
+                    if(accion <= 10){
+                        this.check();
+                    }
+                    else{
+                        this.bet();
+                    }
+                }
+                if(this.accionTurno.equals("A")){
+                    this.fold();
+                }
+            }
+        }
+        if(this.turno > 4){
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean accionAleatoria() throws IOException{
+        Random rand = new Random();
+        int accion;
+        if(!dealer){    
+            if(this.turno == 1){
+                accion = rand.nextInt(2);
+                if(accion == 0){
+                    this.check();
+                }else{
+                    this.bet();
+                }
+            }
+            if(this.accionTurno.equals("A")){
+                accion = rand.nextInt(2);
+                this.turno++;
+                if(accion == 0){
+                    this.fold();
+                }else{
+                    this.call();
+                }
+                if(this.turno > 4){
+                    return true;
+                }
+                return false;
+            }
+        }
+        
+        else{
+            if(this.accionTurno.equals("P")){
+                accion = rand.nextInt(2);
+                this.turno++;
+                if(accion == 0){
+                    this.check();
+                }else{
+                    this.bet();
+                }
+                if(this.turno > 4){
+                    return true;
+                }
+                return false;
+            }
+            else if(this.accionTurno.equals("A")){
+                accion = rand.nextInt(2);
+                this.turno++;
+                if(accion == 0){
+                    this.fold();
+                }else{
+                    this.call();
+                }
+                if(this.turno > 4){
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+    
+    public void setModo(int modo){
+        this.modo = modo;
     }
 }
