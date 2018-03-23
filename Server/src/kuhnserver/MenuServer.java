@@ -53,7 +53,8 @@ public class MenuServer {
                 socket = server.accept();
                 System.out.println("Connexion aceptada");
                 if(modoJuego != 3){
-                    new ServerThread(socket, modoJuego).start();
+                    ServerThread st = new ServerThread(socket, modoJuego);
+                    st.start();
                 }
                     
               
