@@ -2,6 +2,7 @@ package kuhnserver;
 
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Random;
 import java.util.logging.Level;
@@ -36,12 +37,11 @@ public class ServerThread extends Thread {
     
     public void run(){
         try {
-            do{ 
-                protocolo.setModo(modo);
+            protocolo.setModo(modo);
+            do{
                 protocolo.resetTurno();
-                protocolo.read();
+                protocolo.readJuego();
                 protocolo.stakes(20, 15);//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
-                Random rand = new Random();
                 protocolo.dealer(this.numDealer);
                 protocolo.card();
                 if (this.numDealer==0){
@@ -49,7 +49,8 @@ public class ServerThread extends Thread {
                 }else{
                     this.numDealer=0;
                 }
-            }while(protocolo.getTurno() < 4);
+                
+            }while(true);
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
         }

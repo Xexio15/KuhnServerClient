@@ -11,6 +11,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -23,6 +25,7 @@ public class ProtocolServer {
     private boolean dealer = false;
     private static final int PETICION = 1;
     private static final int INICIAR = 2;
+    private static final int FIN = 3;
     private int turno = 1;
     private String accionTurno = null;
     private ArrayList cartas;
@@ -130,7 +133,6 @@ public class ProtocolServer {
         this.utils.write_int32(fichasCliente);
         this.utils.write_space();
         this.utils.write_int32(fichasServidor);
-        
         System.out.println("Tienes "+fichasServidor+" fichas");
         
         if(this.turno < 4){
@@ -145,13 +147,21 @@ public class ProtocolServer {
                     salir = true;
                 }
             }while(!salir);
+        }else{
+            estado = FIN;
         }
     }
     
     public void dealer(int jugador) throws IOException{
+        char jug;
+        if(jugador == 0){
+            jug = '0';
+        }else{
+            jug = '1';
+        }
         this.utils.write_command("DEAL");
         this.utils.write_space();
-        this.utils.writeChar((char)jugador);
+        this.utils.writeChar(jug);
         if(jugador == 0){
             dealer = true;
             System.out.println("Eres el dealer");
@@ -174,9 +184,11 @@ public class ProtocolServer {
             readJuego();
         }else if(!dealer && this.modo == 1){
             accionAleatoria();
+            readJuego();
         }
         else if(!dealer && this.modo == 2){
             accionOptima();
+            readJuego();
         }
     }
     
@@ -216,10 +228,17 @@ public class ProtocolServer {
     
     public void readJuego() throws IOException{
         boolean salir = false;
+        String cmd;
         do{
-            String cmd = this.utils.read_command();
-            
-            if(dealer){
+            cmd = this.utils.read_command();
+            System.out.println(cmd);
+            if(cmd.equals("STRT")){
+                utils.read_space();
+                id = utils.read_int32();
+                System.out.println("El jugador "+id+" ha iniciado la partida");
+                salir = true;
+            }
+            else if(dealer){
                 if(cmd.equals("CHCK")){
                     this.accionTurno = "P";
                     System.out.println("El cliente ha pasado");
@@ -304,13 +323,15 @@ public class ProtocolServer {
                     this.turno = 5;
                     salir = true;
                 }
-            }else if(this.turno > 4){
+            }
+            if(this.turno > 4){
                 salir = true;
             }
-            
+            System.out.println(4);
         }while(!salir);
-        
-        this.turno++;
+        if(!cmd.equals("STRT")){
+            this.turno++;
+        }
     }
     
     public boolean isDealer(){
@@ -325,8 +346,16 @@ public class ProtocolServer {
         return accionTurno;
     }
     public void resetTurno(){
+        
         this.turno = 1;
         this.bote = 0;
+        cartas = new ArrayList();
+        cartas.add('J');
+        cartas.add('Q');
+        cartas.add('K');
+        tablaJugadores = new ArrayList(); //Tabla para guardar a los jugadores
+        Collections.shuffle(cartas);
+        estado = INICIAR;
     }
     
     public void setModo(int modo){

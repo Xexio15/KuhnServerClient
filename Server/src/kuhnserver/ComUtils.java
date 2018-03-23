@@ -300,13 +300,6 @@ public class ComUtils
         dos.write(bStr, 0, 1);
   }
     
-    
-    public void flushSocket(){
-      try {
-          dos.flush();
-      } catch (IOException ex) {
-          Logger.getLogger(ComUtils.class.getName()).log(Level.SEVERE, null, ex);
-      }
-    }
+
 }
 
