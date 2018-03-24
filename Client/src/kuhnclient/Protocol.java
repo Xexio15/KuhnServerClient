@@ -334,7 +334,7 @@ public class Protocol {
                     System.out.println("El servidor ha ido");
                     
                     //Si estamos en el tercer turno, tendremos que leer el showdown/stakes
-                    if(this.turno != 3){
+                    if(this.turno < 3){
                         salir = true;
                     }
                 }
@@ -374,9 +374,6 @@ public class Protocol {
                         salir = true;
                     }
                 }
-            }
-            if(turno > 4){
-                salir = true;
             }
             
             if(estado == STKS_LEIDO){
