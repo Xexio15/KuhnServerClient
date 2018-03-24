@@ -42,7 +42,7 @@ public class ServerThread extends Thread {
             do{
                 protocolo.resetTurno();
                 protocolo.readJuego();
-                protocolo.stakes();//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
+                protocolo.stakes();
                 protocolo.dealer(this.numDealer);
                 protocolo.card();
                 if (this.numDealer==0){

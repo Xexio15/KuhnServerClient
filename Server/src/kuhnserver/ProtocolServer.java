@@ -154,12 +154,12 @@ public class ProtocolServer {
         if(this.turno < 4){
             boolean salir = false;
             String cmd = this.utils.read_command();
-            do{
-               
+            do{    
                 if(estado == INICIAR && cmd.equals("ANOK")){
                     System.out.println("El cliente ha aceptado la apuesta inicial");
                     this.fichasCliente--;
                     this.bote++;
+                    logger.info(cmd);
                     salir = true;
                 }
             }while(!salir);
@@ -388,6 +388,7 @@ public class ProtocolServer {
         tablaJugadores = new ArrayList(); //Tabla para guardar a los jugadores
         Collections.shuffle(cartas);
         estado = INICIAR;
+        accionTurno = null;
     }
     
     public void setModo(int modo){
