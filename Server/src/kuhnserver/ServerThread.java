@@ -54,6 +54,12 @@ public class ServerThread extends Thread {
             }while(true);
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+        }finally{
+            try {
+                socket.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
     }
