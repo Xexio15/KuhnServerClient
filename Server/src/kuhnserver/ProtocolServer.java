@@ -270,7 +270,7 @@ public class ProtocolServer {
                 salir = true;
                 logger.info(cmd+' '+id);
             }
-            else if(estado == INICIAR && cmd.equals("QUIT")){
+            else if(cmd.equals("QUIT")){
                 System.out.println("El cliente se ha ido");
                 logger.info(cmd);
                 salir = true;
