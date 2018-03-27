@@ -33,6 +33,7 @@ public class Menu {
     private void menu(){
         Scanner sc = new Scanner(System.in);
         boolean salir = false;
+        int id = -1;
 
         do{
             imprimirMenu();
@@ -55,10 +56,12 @@ public class Menu {
                 case 2:
                     protocolo.resetTurno();
                     if(protocolo != null){
-                        Random rand = new Random();
-                        int randomNum = rand.nextInt((9999 - 1000) + 1) + 1000;//Habria que preguntar pro la ID
+                        if(id == -1){
+                            System.out.println("Introduce una ID:");
+                            id = sc.nextInt();
+                        }
                         try {
-                            protocolo.start(randomNum);
+                            protocolo.start(id);
                             if(this.modo == 1 || this.modo == 2){
                                 protocolo.ante();
                             
