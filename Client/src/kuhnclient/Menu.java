@@ -77,20 +77,24 @@ public class Menu {
                                             switch(turno){
                                                 case 2:
                                                     if(accion.equals("P")){
-                                                        System.out.println("Accion:\n   1- Pasar\n   2- Apostar");
+                                                        System.out.println("Accion:\n   1- Pasar\n   2- Apostar\n   3- Salir");
                                                         op = sc.nextInt();
                                                         if(op == 1){
                                                             protocolo.check();
-                                                        }else{
+                                                        }else if(op == 2){
                                                             protocolo.bet();
+                                                        }else{
+                                                            protocolo.quit();
                                                         }
                                                     }else if(accion.equals("A")){
-                                                        System.out.println("Accion:\n   1- Ir\n   2- Retirarse");
+                                                        System.out.println("Accion:\n   1- Ir\n   2- Retirarse\n   3- Salir");
                                                         op = sc.nextInt();
                                                         if(op == 1){
                                                             protocolo.call();
-                                                        }else{
+                                                        }else if(op == 2){
                                                             protocolo.fold();
+                                                        }else{
+                                                            protocolo.quit();
                                                         }
                                                     }
                                                     break;
@@ -99,21 +103,25 @@ public class Menu {
                                         else{
                                             switch(turno){
                                                 case 1:
-                                                    System.out.println("Accion:\n   1- Pasar\n   2- Apostar");
+                                                    System.out.println("Accion:\n   1- Pasar\n   2- Apostar\n   3- Salir");
                                                     op = sc.nextInt();
                                                     if(op == 1){
                                                         protocolo.check();
-                                                    }else{
+                                                    }else if(op == 2){
                                                         protocolo.bet();
+                                                    }else{
+                                                        protocolo.quit();
                                                     }
                                                     break;
                                                 case 3:
-                                                    System.out.println("Accion:\n   1- Ir\n   2- Retirarse");
+                                                    System.out.println("Accion:\n   1- Ir\n   2- Retirarse\n   3- Salir");
                                                     op = sc.nextInt();
                                                     if(op == 1){
                                                         protocolo.call();
-                                                    }else{
+                                                    }else if(op == 2){
                                                         protocolo.fold();
+                                                    }else{
+                                                        protocolo.quit();
                                                     }
                                                     break;
                                                 default:
@@ -123,6 +131,7 @@ public class Menu {
                                     }while(protocolo.getTurno() < 4);
                                 }else{
                                     protocolo.quit();
+                                    protocolo = null;
                                 }
                             }
                         } catch (IOException ex) {
