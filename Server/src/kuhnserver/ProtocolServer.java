@@ -7,6 +7,7 @@ package kuhnserver;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -161,6 +162,15 @@ public class ProtocolServer {
                     this.bote++;
                     logger.info(cmd);
                     salir = true;
+                }else if(estado == INICIAR && cmd.equals("QUIT")){
+                    System.out.println("El cliente no ha aceptado la apuesta inicial");
+                    logger.info(cmd);
+                    salir = true;
+                    try{
+                        socket.close();
+                    }catch(SocketException ex){
+                        System.out.println("Socket tancat");
+                    }
                 }
             }while(!salir);
         }else{
@@ -259,6 +269,18 @@ public class ProtocolServer {
                 System.out.println("El jugador "+id+" ha iniciado la partida");
                 salir = true;
                 logger.info(cmd+' '+id);
+            }
+            else if(estado == INICIAR && cmd.equals("QUIT")){
+                System.out.println("El cliente se ha ido");
+                logger.info(cmd);
+                salir = true;
+                this.turno = 5;
+                try{
+                    socket.close();
+                    socket = null;
+                }catch(SocketException ex){
+                    System.out.println("Socket tancat");
+                }
             }
             else if(dealer){
                 if(cmd.equals("CHCK")){

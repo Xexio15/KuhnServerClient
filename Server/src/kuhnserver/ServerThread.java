@@ -51,7 +51,7 @@ public class ServerThread extends Thread {
                     this.numDealer=0;
                 }
                 
-            }while(true);
+            }while(socket != null);
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
         }finally{
