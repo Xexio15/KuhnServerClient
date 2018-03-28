@@ -34,6 +34,7 @@ public class Protocol {
     private int turno = 1;
     private String accionTurno = null;
     private char carta;
+    private int fichas;
     
     /**
      *
@@ -42,10 +43,12 @@ public class Protocol {
      * @throws UnknownHostException
      * @throws IOException
      */
-    public Protocol(String nomMaquina, int port) throws UnknownHostException, IOException{
-        this.address = InetAddress.getByName(nomMaquina);
-        this.port = port;
-        socket = new Socket(this.address, this.port);
+    public Protocol(Socket socket) throws UnknownHostException, IOException{
+        //this.address = InetAddress.getByName(nomMaquina);
+        //this.port = port;
+        
+        //socket = new Socket(this.address, this.port);
+        this.socket = socket;
         this.utils = new ComUtils(this.socket);
     }
     
@@ -73,12 +76,17 @@ public class Protocol {
      */
     public void ante() throws IOException{
         //Enviamos el comanod ANTE_OK
-        this.utils.write_command("ANOK");
-        //Cambiamos el estado
-        estado = INICIAR;
-        
-        //Entramos en el bucle de lectura del socket
-        read();
+        if(this.fichas > 0){
+            this.utils.write_command("ANOK");
+            //Cambiamos el estado
+            estado = INICIAR;
+
+            //Entramos en el bucle de lectura del socket
+            read();
+        }else{
+            System.out.println("No te quedan fichas");
+            quit();
+        }
     }
     
     /**
@@ -196,7 +204,7 @@ public class Protocol {
                 
                 //Leemos el primer argumento
                 arg1 = this.utils.read_int32();
-                
+                this.fichas = arg1;
                 //Informamos de las fichas que tiene el cliente
                 System.out.println("Tienes "+arg1+" fichas");
                 
@@ -268,7 +276,6 @@ public class Protocol {
         do{
             //Leemos el comando del socket
             String cmd = this.utils.read_command();
-            System.out.println(cmd);
             
              if(cmd.equals("SHOW")){
                 utils.read_space();
@@ -277,7 +284,7 @@ public class Protocol {
                 System.out.println("El servidor tiene la carta: "+cartaServidor);
                 
                 if(valorCarta(this.carta) > valorCarta(cartaServidor)){
-                    System.out.println("Gana el cliente");
+                    System.out.println("Has ganado!");
                 }
                 else{
                     System.out.println("Gana el servidor");
@@ -365,7 +372,7 @@ public class Protocol {
                     }
                 }else if(cmd.equals("FOLD")){
                     this.accionTurno = "F";
-                    System.out.println("El servidor se ha retirado, el cliente gana");
+                    System.out.println("El servidor se ha retirado, has ganado!");
                     this.turno = 5;
                 }else if(cmd.equals("CALL")){
                     this.accionTurno = "C";
@@ -434,6 +441,7 @@ public class Protocol {
         int accion;
         if(dealer){
             if(this.carta == 'K'){
+                this.turno++;
                 if(this.accionTurno.equals("P")){
                     this.bet();
                 }else if(this.accionTurno.equals("A")){
@@ -443,6 +451,7 @@ public class Protocol {
             }
             
             else if(this.carta == 'J'){
+                this.turno++;
                 if(this.accionTurno.equals("P")){
                     accion = rand.nextInt(15)+1;
                     if(accion <= 10){
@@ -457,6 +466,7 @@ public class Protocol {
             }
             
             else if(this.carta == 'Q'){
+                this.turno++;
                 if(this.accionTurno.equals("P")){
                     accion = rand.nextInt(15)+1;
                     if(accion <= 10){
@@ -473,6 +483,7 @@ public class Protocol {
         
         else{
             if(this.carta == 'K'){
+                this.turno++;
                 this.bet();
             }
             
@@ -480,6 +491,7 @@ public class Protocol {
                 if(this.turno == 1){
                     this.check();
                 }
+                this.turno++;
                 if(this.accionTurno.equals("A")){
                     accion = rand.nextInt(15)+1;
                     if(accion <= 10){
@@ -501,6 +513,7 @@ public class Protocol {
                         this.bet();
                     }
                 }
+                this.turno++;
                 if(this.accionTurno.equals("A")){
                     this.fold();
                 }

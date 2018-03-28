@@ -6,6 +6,7 @@
 package kuhnclient;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,8 +19,9 @@ import java.util.Random;
  */
 public class Menu {
     private Protocol protocolo;
-    String nomMaquina;
-    int numPort, modo;
+    private String nomMaquina;
+    private int numPort, modo;
+    private Socket socket = null;
     /**
      * Constructor
      */
@@ -34,27 +36,15 @@ public class Menu {
         Scanner sc = new Scanner(System.in);
         boolean salir = false;
         int id = -1;
-
+        //crearProtocolo();
         do{
             imprimirMenu();
             int opcion = sc.nextInt();
             switch(opcion){
-                case 1: 
-                    //System.out.println("Introduce el nombre del servidor");
-                    //String address = sc.next();
-                    //System.out.println("Introduce el puerto de conexion");
-                    //int port = sc.nextInt();
-                    
-                    try {
-                        protocolo = new Protocol(nomMaquina, numPort);
-                        protocolo.setModo(this.modo);
-                    } catch (IOException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                    break;
-                case 2:
-                    protocolo.resetTurno();
+                
+                case 1:
+                    crearProtocolo();
+                    //protocolo.resetTurno();
                     if(protocolo != null){
                         if(id == -1){
                             System.out.println("Introduce una ID:");
@@ -138,13 +128,16 @@ public class Menu {
                                 }
                             }
                         } catch (IOException ex) {
-                            Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
+                            if(ex.getMessage().equals("Broken Pipe")){
+                                System.out.println("No se ha podido conectar al servidor, vuelve a intentarlo");
+                            }
+                            //Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }else{
                         System.out.println("No estas conectado a ningun servidor");
                     }
                     break;
-                case 3:
+                case 2:
                     
                     salir = true;
                     break;
@@ -159,9 +152,20 @@ public class Menu {
     public static void imprimirMenu(){
         System.out.println("Menú");
         System.out.println("=======================");
-        System.out.println("   1- Conectar-se a un servidor");
-        System.out.println("   2- Jugar");
-        System.out.println("   3- Salir");
+        System.out.println("   1- Jugar");
+        System.out.println("   2- Salir");
+    }
+    
+    private void crearProtocolo(){
+        try{
+            if(socket == null){
+                socket = new Socket(nomMaquina, numPort);
+            }
+            protocolo = new Protocol(socket);
+            protocolo.setModo(this.modo);
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
 
