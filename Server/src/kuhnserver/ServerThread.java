@@ -4,6 +4,7 @@ package kuhnserver;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,10 +25,15 @@ public class ServerThread extends Thread {
     private ProtocolServer protocolo;
     private int numDealer;
     public ServerThread(Socket socket, int modo){
-        this.socket = socket;
-        this.modo = modo;
-        Random rand = new Random();
-        this.numDealer = rand.nextInt(2);
+        //try {
+            this.socket = socket;
+            //socket.setSoTimeout(3000);
+            this.modo = modo;
+            Random rand = new Random();
+            this.numDealer = rand.nextInt(2);
+        //} //catch (SocketException ex) {
+            //Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+        //}
         
     }
     
@@ -40,7 +46,7 @@ public class ServerThread extends Thread {
         try {
             protocolo.setModo(modo);
             do{
-                protocolo.resetTurno();
+                
                 protocolo.readJuego();
                 protocolo.stakes();
                 protocolo.dealer(this.numDealer);
@@ -50,6 +56,7 @@ public class ServerThread extends Thread {
                 }else{
                     this.numDealer=0;
                 }
+                protocolo.resetTurno();
                 
             }while(socket != null);
         } catch (IOException ex) {

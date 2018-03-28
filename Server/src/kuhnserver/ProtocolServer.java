@@ -39,10 +39,10 @@ public class ProtocolServer {
     private int fichasServidor = 15;
     private int fichasCliente = 20;
     private int bote = 0;
-    private ArrayList tablaJugadores;
     private int modo = 3;
     private Logger logger = Logger.getLogger("Server"+Thread.currentThread().getName()+".log");  
     private FileHandler fh;
+    
     public ProtocolServer(Socket socket) throws UnknownHostException, IOException{
         this.socket = socket;
         this.utils = new ComUtils(this.socket);
@@ -50,7 +50,6 @@ public class ProtocolServer {
         cartas.add('J');
         cartas.add('Q');
         cartas.add('K');
-        tablaJugadores = new ArrayList(); //Tabla para guardar a los jugadores
         Collections.shuffle(cartas);
         estado = INICIAR;
         
@@ -63,27 +62,7 @@ public class ProtocolServer {
 
     }
     
-    public void start(int id) throws IOException{
-        this.utils.write_command("STRT");
-        this.utils.write_space();
-        this.utils.write_int32(id);
-        this.fichasServidor--;
-        this.bote++;
-        estado = PETICION;
-        read();
-    }
-    
-    public void ante() throws IOException{
-        this.utils.write_command("ANOK");
-        estado = INICIAR;
-        read();
-    }
-    
-    public void quit() throws IOException{
-        this.utils.write_command("QUIT");
-        this.turno = 5;
-    }
-    
+
     //Apostar
     public void bet() throws IOException{
         
@@ -135,10 +114,12 @@ public class ProtocolServer {
         this.accionTurno = "R";
         this.utils.write_command("FOLD");
         logger.info("FOLD");
-        System.out.println("Te has retirado, el cliente gana");
+        if(this.modo == 3){
+            System.out.println("Te has retirado, el cliente gana");
+        }
         this.fichasCliente = this.fichasCliente + this.bote;
-        stakes();
         this.turno = 5;
+        stakes();
         
     }
     
@@ -150,20 +131,27 @@ public class ProtocolServer {
         this.utils.write_space();
         this.utils.write_int32(this.fichasServidor);
         logger.info("STKS"+' '+fichasCliente+' '+fichasServidor);
-        System.out.println("Tienes "+fichasServidor+" fichas");
-        
+        if(this.modo == 3){
+            System.out.println("Tienes "+fichasServidor+" fichas");
+        }
         if(this.turno < 4){
             boolean salir = false;
             String cmd = this.utils.read_command();
             do{    
                 if(estado == INICIAR && cmd.equals("ANOK")){
-                    System.out.println("El cliente ha aceptado la apuesta inicial");
+                    if(this.modo == 3){
+                        System.out.println("El cliente ha aceptado la apuesta inicial");
+                    }
                     this.fichasCliente--;
+                    this.fichasServidor--;
+                    this.bote++;
                     this.bote++;
                     logger.info(cmd);
                     salir = true;
                 }else if(estado == INICIAR && cmd.equals("QUIT")){
-                    System.out.println("El cliente no ha aceptado la apuesta inicial");
+                    if(this.modo == 3){
+                        System.out.println("El cliente no ha aceptado la apuesta inicial");
+                    }
                     logger.info(cmd);
                     salir = true;
                     try{
@@ -172,7 +160,7 @@ public class ProtocolServer {
                         System.out.println("Socket tancat");
                     }
                 }
-            }while(!salir);
+            }while(!salir && turno < 4 );
         }else{
             estado = FIN;
         }
@@ -191,10 +179,14 @@ public class ProtocolServer {
         logger.info("DEAL"+' '+jug);
         if(jugador == 0){
             dealer = true;
-            System.out.println("Eres el dealer");
+            if(this.modo == 3){
+                System.out.println("Eres el dealer");
+            }
         }else{
             dealer = false;
-            System.out.println("El cliente es el dealer");
+            if(this.modo == 3){
+                System.out.println("El cliente es el dealer");
+            }
         }
     }
     
@@ -207,7 +199,9 @@ public class ProtocolServer {
         this.utils.write_space();
         this.utils.writeChar(this.cartaCliente);
         logger.info("CARD"+' '+this.cartaCliente);
-        System.out.println("Tu carta es: "+ this.cartaServidor);
+        if(this.modo == 3){
+            System.out.println("Tu carta es: "+ this.cartaServidor);
+        }
         if(dealer){
             readJuego();
         }else if(!dealer && this.modo == 1){
@@ -224,17 +218,23 @@ public class ProtocolServer {
         this.utils.write_command("SHOW");
         this.utils.write_space();
         this.utils.writeChar(this.cartaServidor);
-        System.out.println("Tu carta es: "+this.cartaServidor);
-        System.out.println("La carta del cliente es: "+this.cartaCliente);
+        if(this.modo == 3){
+            System.out.println("Tu carta es: "+this.cartaServidor);
+            System.out.println("La carta del cliente es: "+this.cartaCliente);
+        }
         logger.info("SHOW"+' '+this.cartaServidor);
         this.turno = 5;
         if(valorCarta(this.cartaCliente) > valorCarta(this.cartaServidor)){
-            System.out.println("Gana el cliente");
+            if(this.modo == 3){
+                System.out.println("Gana el cliente");
+            }
             this.fichasCliente = this.fichasCliente + this.bote;
             stakes();
         }
         else{
-            System.out.println("Gana el servidor");
+            if(this.modo == 3){
+                System.out.println("Gana el servidor");
+            }
             this.fichasServidor = this.fichasServidor + this.bote;
             stakes();
         }
@@ -242,36 +242,27 @@ public class ProtocolServer {
     }
     
     
-    public void read() throws IOException{
-        boolean salir = false;
-        String cmd;
-        do{
-            cmd = utils.read_command();
-            if(cmd.equals("STRT")){
-                utils.read_space();
-                id = utils.read_int32();
-                System.out.println("El jugador "+id+" ha iniciado la partida");
-                logger.info(cmd+' '+id);
-                salir = true;
-            }
-        }while(!salir); 
-    }
     
     public void readJuego() throws IOException{
         boolean salir = false;
-        String cmd;
-        do{
+        String cmd = "";
+        
+        while(!salir && this.turno < 4){
             cmd = this.utils.read_command();
-            System.out.println(cmd);
+            
             if(cmd.equals("STRT")){
                 utils.read_space();
                 id = utils.read_int32();
-                System.out.println("El jugador "+id+" ha iniciado la partida");
+                if(this.modo == 3){
+                    System.out.println("El jugador "+id+" ha iniciado la partida "+ this.turno);
+                }
                 salir = true;
                 logger.info(cmd+' '+id);
             }
             else if(cmd.equals("QUIT")){
-                System.out.println("El cliente se ha ido");
+                if(this.modo == 3){
+                    System.out.println("El cliente se ha ido");
+                }
                 logger.info(cmd);
                 salir = true;
                 this.turno = 5;
@@ -285,7 +276,9 @@ public class ProtocolServer {
             else if(dealer){
                 if(cmd.equals("CHCK")){
                     this.accionTurno = "P";
-                    System.out.println("El cliente ha pasado");
+                    if(this.modo == 3){
+                        System.out.println("El cliente ha pasado");
+                    }
                     logger.info(cmd);
                     if(this.modo == 1){
                         salir = accionAleatoria();
@@ -302,7 +295,9 @@ public class ProtocolServer {
                     this.bote++;
                     this.accionTurno = "A";
                     logger.info(cmd);
-                    System.out.println("El cliente ha apostado");
+                    if(this.modo == 3){
+                        System.out.println("El cliente ha apostado");
+                    }
                     if(this.modo == 1){
                         salir = accionAleatoria();
                     }else if(modo == 2){
@@ -314,7 +309,9 @@ public class ProtocolServer {
                 }
                 else if(cmd.equals("CALL")){
                     this.accionTurno = "C";
-                    System.out.println("El cliente ha ido");
+                    if(this.modo == 3){
+                        System.out.println("El cliente ha ido");
+                    }
                     logger.info(cmd);
                     this.bote++;
                     this.fichasCliente--;
@@ -325,18 +322,22 @@ public class ProtocolServer {
                 }
                 else if(cmd.equals("FOLD")){
                     this.accionTurno = "F";
-                    System.out.println("El cliente se ha retirado, el servidor gana");
+                    if(this.modo == 3){
+                        System.out.println("El cliente se ha retirado, el servidor gana");
+                    }
                     logger.info(cmd);
                     this.fichasServidor = this.fichasServidor + this.bote;
-                    stakes();
                     this.turno = 5;
+                    stakes();
                     salir = true;
                 }
             }else if(!dealer){
                 if(cmd.equals("CHCK")){
                     this.accionTurno = "P";
                     logger.info(cmd);
-                    System.out.println("El cliente ha pasado");
+                    if(this.modo == 3){
+                        System.out.println("El cliente ha pasado");
+                    }
                     if(this.turno == 2){
                         showdown();
                     }
@@ -347,7 +348,9 @@ public class ProtocolServer {
                     this.bote++;
                     this.accionTurno = "A";
                     logger.info(cmd);
-                    System.out.println("El cliente ha apostado");
+                    if(this.modo == 3){
+                        System.out.println("El cliente ha apostado");
+                    }
                     if(this.modo == 1){
                         salir = accionAleatoria();
                     }
@@ -361,7 +364,9 @@ public class ProtocolServer {
                 else if(cmd.equals("CALL")){
                     this.accionTurno = "C";
                     logger.info(cmd);
-                    System.out.println("El cliente ha ido");
+                    if(this.modo == 3){
+                        System.out.println("El cliente ha ido");
+                    }
                     this.bote++;
                     this.fichasCliente--;
                     if(this.turno == 2 || this.turno == 3){
@@ -372,17 +377,19 @@ public class ProtocolServer {
                 else if(cmd.equals("FOLD")){
                     this.accionTurno = "F";
                     logger.info(cmd);
-                    System.out.println("El cliente se ha retirado, el servidor gana");
+                    if(this.modo == 3){
+                        System.out.println("El cliente se ha retirado, el servidor gana");
+                    }
                     this.fichasServidor = this.fichasServidor + this.bote;
-                    stakes();
                     this.turno = 5;
+                    stakes();
                     salir = true;
                 }
             }
             if(this.turno > 4){
                 salir = true;
             }
-        }while(!salir);
+        }
         if(!cmd.equals("STRT")){
             this.turno++;
         }
@@ -407,7 +414,6 @@ public class ProtocolServer {
         cartas.add('J');
         cartas.add('Q');
         cartas.add('K');
-        tablaJugadores = new ArrayList(); //Tabla para guardar a los jugadores
         Collections.shuffle(cartas);
         estado = INICIAR;
         accionTurno = null;
@@ -480,6 +486,7 @@ public class ProtocolServer {
         int accion;
         if(dealer){
             if(this.cartaServidor == 'K'){
+                this.turno++;
                 if(this.accionTurno.equals("P")){
                     this.bet();
                 }else if(this.accionTurno.equals("A")){
@@ -487,8 +494,8 @@ public class ProtocolServer {
                 }
                 
             }
-            
             else if(this.cartaServidor == 'J'){
+                this.turno++;
                 if(this.accionTurno.equals("P")){
                     accion = rand.nextInt(15)+1;
                     if(accion <= 10){
@@ -503,6 +510,7 @@ public class ProtocolServer {
             }
             
             else if(this.cartaServidor == 'Q'){
+                this.turno++;
                 if(this.accionTurno.equals("P")){
                     accion = rand.nextInt(15)+1;
                     if(accion <= 10){
@@ -519,13 +527,16 @@ public class ProtocolServer {
         
         else{
             if(this.cartaServidor == 'K'){
+                this.turno++;
                 this.bet();
             }
             
             else if(this.cartaServidor == 'Q'){
+                
                 if(this.turno == 1){
                     this.check();
                 }
+                this.turno++;
                 if(this.accionTurno.equals("A")){
                     accion = rand.nextInt(15)+1;
                     if(accion <= 10){
@@ -547,6 +558,7 @@ public class ProtocolServer {
                         this.bet();
                     }
                 }
+                this.turno++;
                 if(this.accionTurno.equals("A")){
                     this.fold();
                 }

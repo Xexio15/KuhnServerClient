@@ -40,11 +40,7 @@ public class MenuServer {
         } catch (IOException ex) {
             Logger.getLogger(MenuServer.class.getName()).log(Level.SEVERE, null, ex);
         }
-//        System.out.println("Modo del servidor");
-//        System.out.println("    1- Acciones aleatorias");
-//        System.out.println("    2- Acciones optimas");
-//        System.out.println("    3- Jugador Real");
-//        modoJuego = sc.nextInt();
+
           int modoJuego = modo;
         do{
             System.out.println("Esperando conexión...");
@@ -57,12 +53,12 @@ public class MenuServer {
                     st.start();
                 }
                     
-              
+                //MODE NO DEMANAT A LA PRACTICA JUGADORvsJUGADOR no MULTITHREAD
                 if(modoJuego == 3){
                     protocolo = new ProtocolServer(socket);
                     protocolo.setModo(modoJuego);
                     protocolo.resetTurno();
-                    protocolo.read();
+                    protocolo.readJuego();
                     protocolo.stakes();//Habria que quitar este parametro i que el servidor guardase las fichas en una tabla por ID's, si el jugador es nuevo darle 20 fichas por ejemplo
                     Random rand = new Random();
                     protocolo.dealer(rand.nextInt(2));
